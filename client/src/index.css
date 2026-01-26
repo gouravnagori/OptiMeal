@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Outfit", "sans-serif";
+  --font-body: "Outfit", "sans-serif";
+  --color-primary: #10b981;
+  /* Emerald 500 */
+  --color-primary-dark: #059669;
+  /* Emerald 600 */
+  --color-secondary: #3b82f6;
+  /* Blue 500 */
+  --color-accent: #f59e0b;
+  /* Amber 500 */
+  --color-dark: #111827;
+  /* Gray 900 */
+  --color-light: #f3f4f6;
+  /* Gray 100 */
+}
+
+:root {
+  font-family: var(--font-body);
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  width: 100%;
+}
+
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* Hide browser's built-in password reveal button */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-textfield-decoration-container {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* For Edge browser */
+input::-ms-reveal {
+  display: none !important;
+}
+
+/* Hide password reveal for all input types when we control it */
+input.hide-browser-eye::-ms-reveal,
+input.hide-browser-eye::-webkit-credentials-auto-fill-button {
+  display: none !important;
+}
