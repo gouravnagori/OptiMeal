@@ -30,11 +30,11 @@ const LiveClock = () => {
     };
 
     return (
-        <div className="hidden md:flex flex-col items-end mr-4">
-            <div className="text-xl font-mono font-bold text-white tracking-widest leading-none">
+        <div className="flex flex-col items-end mr-2 md:mr-4">
+            <div className="text-sm md:text-xl font-mono font-bold text-white tracking-widest leading-none">
                 {formatTime(time)}
             </div>
-            <div className="text-xs font-medium text-gray-400 uppercase tracking-wide">
+            <div className="text-[10px] md:text-xs font-medium text-gray-400 uppercase tracking-wide">
                 {formatDate(time)}
             </div>
         </div>

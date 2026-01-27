@@ -36,8 +36,16 @@ const ManagerAuth = () => {
         // Force role to manager
         const payload = { ...formData, role: 'manager' };
 
+        // Show toast for server waking up (Render free tier cold start)
+        const loadingToast = toast.loading('Connecting to server... (may take 30s on first load)');
+
         try {
-            const { data } = await axios.post(url, payload, { withCredentials: true });
+            const { data } = await axios.post(url, payload, {
+                withCredentials: true,
+                timeout: 60000 // 60 second timeout for cold start
+            });
+
+            toast.dismiss(loadingToast);
 
             // Check if user is actually a manager
             if (data.role !== 'manager') {
@@ -53,10 +61,19 @@ const ManagerAuth = () => {
             // Force hard reload to clear any cached React state
             window.location.href = '/manager/dashboard';
         } catch (error) {
+            toast.dismiss(loadingToast);
             console.error("Login Error Details:", error);
-            const errorMessage = error.response?.data?.message
-                || error.message
-                || 'Authentication failed. Check server connection.';
+
+            let errorMessage = 'Authentication failed.';
+
+            if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+                errorMessage = 'Server is waking up. Please try again in a few seconds!';
+            } else if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+                errorMessage = 'Server is starting up. Please wait 30 seconds and try again.';
+            } else if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            }
+
             toast.error(errorMessage);
         } finally {
             setLoading(false);

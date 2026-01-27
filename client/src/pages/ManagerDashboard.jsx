@@ -195,13 +195,14 @@ const ManagerDashboard = () => {
                         </h1>
                         <p className="text-gray-400 mt-2">Overview for Today</p>
                     </div>
-                    <button
-                        onClick={generateAiMenu}
-                        className="px-6 py-2.5 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl font-bold flex items-center gap-2 hover:opacity-90 transition-opacity shadow-lg shadow-purple-500/20 cursor-pointer"
+                    <div
+                        className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-xl font-medium flex items-center gap-2 opacity-70 cursor-not-allowed"
+                        title="AI Menu Planner - Coming Soon!"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                        AI Menu Planner
-                    </button>
+                        <span className="hidden sm:inline">AI Menu</span>
+                        <span className="text-xs bg-purple-600/50 px-2 py-0.5 rounded-full">Soon</span>
+                    </div>
                 </div>
 
                 {/* Real-time Headcount */}
