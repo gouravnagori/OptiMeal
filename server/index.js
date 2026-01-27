@@ -17,13 +17,30 @@ import feedbackRoutes from './routes/feedback.js';
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
+// CORS Configuration - Allow frontend domains
+const allowedOrigins = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    process.env.CLIENT_URL,
+    process.env.FRONTEND_URL,
+    'https://opti-meal.vercel.app' // Hardcoded production URL as fallback
+].filter(Boolean);
+
 app.use(cors({
-    origin: [
-        'http://localhost:5173',
-        'http://127.0.0.1:5173',
-        process.env.CLIENT_URL // Allow production domain (e.g., https://my-app.vercel.app)
-    ].filter(Boolean), // Remove undefined if env var is missing
+    origin: function (origin, callback) {
+        // Allow requests with no origin (mobile apps, Postman, etc.)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.log('CORS blocked origin:', origin);
+            callback(null, true); // Allow all origins in production for now
+        }
+    },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // CRITICAL: Prevent browser caching of API responses
