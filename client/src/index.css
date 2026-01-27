@@ -39,6 +39,32 @@ body {
   width: 100%;
 }
 
+/* Input placeholder styling - ensures visibility on all devices */
+input::placeholder {
+  color: #9ca3af !important;
+  opacity: 1 !important;
+}
+
+input::-webkit-input-placeholder {
+  color: #9ca3af !important;
+  opacity: 1 !important;
+}
+
+input::-moz-placeholder {
+  color: #9ca3af !important;
+  opacity: 1 !important;
+}
+
+input:-ms-input-placeholder {
+  color: #9ca3af !important;
+  opacity: 1 !important;
+}
+
+input::-ms-input-placeholder {
+  color: #9ca3af !important;
+  opacity: 1 !important;
+}
+
 
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
