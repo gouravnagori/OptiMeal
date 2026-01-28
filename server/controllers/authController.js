@@ -13,10 +13,24 @@ const generateToken = (id) => {
 export const register = async (req, res) => {
     const { name, email, password, role, messCode, messName, location, phone, gender } = req.body;
 
-    const boyProfilePic = `https://avatar.iran.liara.run/public/boy?username=${name}`;
-    const girlProfilePic = `https://avatar.iran.liara.run/public/girl?username=${name}`;
+    // Generate random cartoon avatar based on gender
+    const randomSeed = Math.floor(Math.random() * 100); // Random number for variety
 
-    const avatar = gender === "female" ? girlProfilePic : boyProfilePic;
+    // Different avatar styles for variety
+    const avatarStyles = ['adventurer', 'adventurer-neutral', 'avataaars', 'big-ears', 'big-smile', 'bottts', 'fun-emoji', 'lorelei', 'micah', 'miniavs', 'personas'];
+    const randomStyle = avatarStyles[Math.floor(Math.random() * avatarStyles.length)];
+
+    let avatar;
+    if (gender === 'female') {
+        // Female cartoon avatars
+        avatar = `https://api.dicebear.com/7.x/${randomStyle}/svg?seed=${name}${randomSeed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
+    } else if (gender === 'male') {
+        // Male cartoon avatars
+        avatar = `https://api.dicebear.com/7.x/${randomStyle}/svg?seed=${name}${randomSeed}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
+    } else {
+        // Neutral avatars for 'other' or 'prefer_not_to_say'
+        avatar = `https://api.dicebear.com/7.x/${randomStyle}/svg?seed=${name}${randomSeed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
+    }
 
     try {
         const userExists = await User.findOne({ email });

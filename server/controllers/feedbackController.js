@@ -20,13 +20,14 @@ export const addFeedback = async (req, res) => {
     }
 };
 
-// Get feedback for a mess (Manager)
+// Get feedback for a mess (Manager) - ANONYMOUS: Student details hidden
 export const getMessFeedback = async (req, res) => {
     const { messId } = req.params;
 
     try {
+        // Don't populate studentId to keep feedback anonymous
         const feedbacks = await Feedback.find({ messId })
-            .populate('studentId', 'name email avatar')
+            .select('message rating createdAt') // Only select necessary fields, exclude studentId
             .sort({ createdAt: -1 }); // Newest first
 
         res.status(200).json(feedbacks);

@@ -109,30 +109,17 @@ const StudentAuth = () => {
                                 <input type="text" name="messCode" placeholder="Enter Mess Code" onChange={handleChange} className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-primary outline-none" required />
                                 <input type="number" name="phone" placeholder="Phone Number" onChange={handleChange} className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-primary outline-none" />
 
-                                <div className="flex gap-4 px-2">
-                                    <label className="flex items-center space-x-2 text-gray-300 cursor-pointer">
-                                        <input
-                                            type="radio"
-                                            name="gender"
-                                            value="male"
-                                            checked={formData.gender === 'male'}
-                                            onChange={handleChange}
-                                            className="accent-primary w-4 h-4"
-                                        />
-                                        <span>Male</span>
-                                    </label>
-                                    <label className="flex items-center space-x-2 text-gray-300 cursor-pointer">
-                                        <input
-                                            type="radio"
-                                            name="gender"
-                                            value="female"
-                                            checked={formData.gender === 'female'}
-                                            onChange={handleChange}
-                                            className="accent-primary w-4 h-4"
-                                        />
-                                        <span>Female</span>
-                                    </label>
-                                </div>
+                                <select
+                                    name="gender"
+                                    value={formData.gender}
+                                    onChange={handleChange}
+                                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-primary outline-none cursor-pointer"
+                                >
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                    <option value="prefer_not_to_say">Prefer not to say</option>
+                                </select>
                             </>
                         )}
 
