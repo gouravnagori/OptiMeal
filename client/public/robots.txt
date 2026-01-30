@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://opti-meal.vercel.app/sitemap.xml
+
+# Crawl delay for bots
+Crawl-delay: 1
