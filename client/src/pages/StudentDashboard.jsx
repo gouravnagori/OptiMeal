@@ -58,8 +58,8 @@ const StudentDashboard = () => {
                     </div>
                 </div>
 
-                {/* Waste-O-Meter Section */}
-                <WasteOMeter />
+                {/* Waste-O-Meter Section - Temporarily Disabled */}
+                {/* <WasteOMeter /> */}
 
                 {/* Main Action Section: Meal Selector */}
                 <MealSelector />
