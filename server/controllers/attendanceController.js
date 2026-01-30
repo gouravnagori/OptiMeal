@@ -1,6 +1,7 @@
 import Attendance from "../models/Attendance.js";
 import User from "../models/User.js";
 import mongoose from 'mongoose';
+import Mess from "../models/Mess.js";
 
 // Get attendance for a specific student for today
 export const getAttendance = async (req, res) => {
@@ -31,6 +32,8 @@ export const getAttendance = async (req, res) => {
     }
 };
 
+
+
 // Update attendance (toggle meal)
 export const updateAttendance = async (req, res) => {
     const { studentId, messId, date, mealType, status } = req.body;
@@ -39,18 +42,35 @@ export const updateAttendance = async (req, res) => {
         const queryDate = new Date(date);
         queryDate.setHours(0, 0, 0, 0);
 
-        // Check 2-hour rule: DISABLED as per user request to allow changes "at any time"
-        // In real app, check Date.now() vs Meal Time
-        const isTooLate = false;
+        // Security Check: Enforce Deadlines
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-        if (isTooLate) {
-            return res.status(400).json({ message: "Too late to change preference" });
+        // Only enforce deadlines if updating for "Today"
+        if (queryDate.getTime() === today.getTime()) {
+            const mess = await Mess.findById(messId).select('mealTimings');
+            if (mess && mess.mealTimings) {
+                const timingKey = mealType === 'hightea' ? 'highTea' : mealType;
+                const timing = mess.mealTimings[timingKey];
+
+                if (timing && timing.requestDeadline) {
+                    const now = new Date();
+                    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+                    if (currentTime >= timing.requestDeadline) {
+                        return res.status(400).json({
+                            message: `Request for ${mealType} is closed. Deadline was ${timing.requestDeadline}`
+                        });
+                    }
+                }
+            }
+        } else if (queryDate < today) {
+            return res.status(400).json({ message: "Cannot change attendance for past dates" });
         }
 
         let attendance = await Attendance.findOne({ studentId, date: queryDate });
 
         if (!attendance) {
-            // Create new record with defaults, then update specific meal
             attendance = new Attendance({
                 studentId,
                 messId,
