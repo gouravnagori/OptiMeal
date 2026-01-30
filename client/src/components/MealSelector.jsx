@@ -269,8 +269,8 @@ const MealSelector = () => {
             <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-start gap-3">
                 <FiInfo className="w-5 h-5 text-blue-400 mt-0.5" />
                 <p className="text-sm text-blue-200">
-                    You can change your meal preference at any time.
-                    Please be responsible with your choices to help the environment.
+                    Meal requests automatically lock after the deadline.
+                    Please plan your meals responsibly to help us reduce food waste.
                 </p>
             </div>
         </div>
