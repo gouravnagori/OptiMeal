@@ -215,8 +215,8 @@ const ManagerDashboard = () => {
                     <StatBox title="Dinner Requests" count={stats.dinner} total={stats.totalStudents || 100} color="bg-blue-500" />
                 </div>
 
-                {/* Waste Stats */}
-                <WasteOMeter />
+                {/* Waste Stats - Temporarily Disabled */}
+                {/* <WasteOMeter /> */}
 
                 {/* Recent Activities / Quick Actions */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
