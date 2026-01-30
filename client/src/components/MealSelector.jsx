@@ -5,16 +5,25 @@ import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { API_URL } from '../config';
 
-const MealCard = ({ type, time, isSelected, onToggle, isLocked, menuItems }) => {
+const MealCard = ({ type, time, isSelected, onToggle, isLocked, menuItems, deadline }) => {
 
     const renderMenuText = (items) => {
         if (!items || items.length === 0 || (items.length === 1 && items[0] === 'Not Updated')) return 'Menu not updated yet';
         return items.join(', ');
     };
 
+    const formatDeadline = (time24) => {
+        if (!time24) return '';
+        const [hours, minutes] = time24.split(':');
+        const h = parseInt(hours);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const h12 = h % 12 || 12;
+        return `${h12}:${minutes} ${ampm}`;
+    };
+
     return (
         <motion.div
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: isLocked ? 1 : 1.02 }}
             className={`relative p-6 rounded-2xl border transition-all ${isSelected ? 'bg-gray-800/80 border-primary/50 shadow-lg shadow-primary/10' : 'bg-gray-900/50 border-gray-800 opacity-60'}`}
         >
             <div className="flex justify-between items-start mb-4">
@@ -33,7 +42,10 @@ const MealCard = ({ type, time, isSelected, onToggle, isLocked, menuItems }) => 
             </div>
 
             <h3 className={`text-xl font-bold mb-1 capitalize ${isSelected ? 'text-white' : 'text-gray-400'}`}>{type === 'highTea' ? 'High Tea' : type}</h3>
-            <p className="text-sm text-gray-400 font-medium mb-4">{time}</p>
+            <p className="text-sm text-gray-400 font-medium mb-1">{time}</p>
+            {deadline && !isLocked && (
+                <p className="text-xs text-yellow-400">🔒 Request by {formatDeadline(deadline)}</p>
+            )}
 
             <div className="space-y-2 mt-4 pt-4 border-t border-gray-700/50">
                 <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold">On the Menu</div>
@@ -43,10 +55,11 @@ const MealCard = ({ type, time, isSelected, onToggle, isLocked, menuItems }) => 
             </div>
 
             {isLocked && (
-                <div className="absolute inset-0 bg-dark/50 backdrop-blur-[1px] rounded-2xl flex items-center justify-center z-10">
-                    <span className="px-3 py-1 bg-red-500/20 text-red-500 text-xs font-bold rounded-full border border-red-500/50">
-                        Locked
+                <div className="absolute inset-0 bg-dark/60 backdrop-blur-[2px] rounded-2xl flex flex-col items-center justify-center z-10">
+                    <span className="px-4 py-2 bg-red-500/20 text-red-400 text-sm font-bold rounded-full border border-red-500/50 flex items-center gap-2">
+                        🔒 Locked
                     </span>
+                    <p className="text-xs text-gray-400 mt-2">Request closed at {formatDeadline(deadline)}</p>
                 </div>
             )}
         </motion.div>
@@ -66,8 +79,35 @@ const MealSelector = () => {
         highTea: [],
         dinner: []
     });
+    const [mealTimings, setMealTimings] = useState({
+        breakfast: { servingStart: '07:30', servingEnd: '09:30', requestDeadline: '07:00' },
+        lunch: { servingStart: '12:00', servingEnd: '14:00', requestDeadline: '11:00' },
+        highTea: { servingStart: '17:00', servingEnd: '18:00', requestDeadline: '16:00' },
+        dinner: { servingStart: '19:30', servingEnd: '21:30', requestDeadline: '19:00' }
+    });
+    const [lockedMeals, setLockedMeals] = useState({
+        breakfast: false,
+        lunch: false,
+        highTea: false,
+        dinner: false
+    });
     const [loading, setLoading] = useState(true);
     const [userInfo, setUserInfo] = useState(null);
+
+    // Check which meals are locked based on current time
+    const checkLockedMeals = (timings) => {
+        const now = new Date();
+        const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+        const locked = {
+            breakfast: timings.breakfast?.requestDeadline ? currentTime >= timings.breakfast.requestDeadline : false,
+            lunch: timings.lunch?.requestDeadline ? currentTime >= timings.lunch.requestDeadline : false,
+            highTea: timings.highTea?.requestDeadline ? currentTime >= timings.highTea.requestDeadline : false,
+            dinner: timings.dinner?.requestDeadline ? currentTime >= timings.dinner.requestDeadline : false
+        };
+
+        setLockedMeals(locked);
+    };
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('userInfo'));
@@ -75,8 +115,45 @@ const MealSelector = () => {
         if (user) {
             fetchAttendance(user);
             fetchDailyMenu(user);
+            fetchMealTimings(user);
         }
+
+        // Check locked meals every minute
+        const interval = setInterval(() => {
+            checkLockedMeals(mealTimings);
+        }, 60000);
+
+        return () => clearInterval(interval);
     }, []);
+
+    const fetchMealTimings = async (user) => {
+        try {
+            const { data } = await axios.get(`${API_URL}/api/mess/timings?messId=${user.messId}`);
+            if (data.mealTimings) {
+                setMealTimings(data.mealTimings);
+                checkLockedMeals(data.mealTimings);
+            }
+        } catch (error) {
+            console.error('Error fetching timings:', error);
+        }
+    };
+
+    // Format time for display
+    const formatServingTime = (mealKey) => {
+        const timing = mealTimings[mealKey];
+        if (!timing) return '';
+
+        const format12h = (time24) => {
+            if (!time24) return '';
+            const [hours, minutes] = time24.split(':');
+            const h = parseInt(hours);
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            const h12 = h % 12 || 12;
+            return `${h12}:${minutes} ${ampm}`;
+        };
+
+        return `${format12h(timing.servingStart)} - ${format12h(timing.servingEnd)}`;
+    };
 
     const fetchDailyMenu = async (user) => {
         try {
@@ -150,38 +227,42 @@ const MealSelector = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <MealCard
                     type="breakfast"
-                    time="07:30 - 09:00 AM"
+                    time={formatServingTime('breakfast')}
                     isSelected={meals.breakfast}
                     onToggle={() => toggleMeal('breakfast')}
-                    isLocked={false}
+                    isLocked={lockedMeals.breakfast}
                     menuItems={menu.breakfast}
+                    deadline={mealTimings.breakfast?.requestDeadline}
                 />
 
                 <MealCard
                     type="lunch"
-                    time="12:30 - 02:30 PM"
+                    time={formatServingTime('lunch')}
                     isSelected={meals.lunch}
                     onToggle={() => toggleMeal('lunch')}
-                    isLocked={false}
+                    isLocked={lockedMeals.lunch}
                     menuItems={menu.lunch}
+                    deadline={mealTimings.lunch?.requestDeadline}
                 />
 
                 <MealCard
                     type="highTea"
-                    time="04:30 - 05:30 PM"
+                    time={formatServingTime('highTea')}
                     isSelected={meals.highTea}
                     onToggle={() => toggleMeal('highTea')}
-                    isLocked={false}
+                    isLocked={lockedMeals.highTea}
                     menuItems={menu.highTea}
+                    deadline={mealTimings.highTea?.requestDeadline}
                 />
 
                 <MealCard
                     type="dinner"
-                    time="07:30 - 09:30 PM"
+                    time={formatServingTime('dinner')}
                     isSelected={meals.dinner}
                     onToggle={() => toggleMeal('dinner')}
-                    isLocked={false}
+                    isLocked={lockedMeals.dinner}
                     menuItems={menu.dinner}
+                    deadline={mealTimings.dinner?.requestDeadline}
                 />
             </div>
 

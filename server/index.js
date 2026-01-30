@@ -13,6 +13,7 @@ import authRoutes from './routes/auth.js';
 import menuRoutes from './routes/menu.js';
 import attendanceRoutes from './routes/attendance.js';
 import feedbackRoutes from './routes/feedback.js';
+import messRoutes from './routes/mess.js';
 
 // Middleware
 app.use(express.json());
@@ -60,6 +61,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/menu', menuRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/mess', messRoutes);
 
 // Basic Route
 app.get('/', (req, res) => {
