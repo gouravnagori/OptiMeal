@@ -4,6 +4,7 @@ import Footer from '../components/Footer';
 import WasteOMeter from '../components/WasteOMeter';
 import MenuEditor from '../components/MenuEditor';
 import FeedbackList from '../components/FeedbackList';
+import StudentManagement from '../components/StudentManagement';
 import axios from 'axios';
 import { toast, Toaster } from 'react-hot-toast';
 import { API_URL } from '../config';
@@ -261,6 +262,9 @@ const ManagerDashboard = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Student Management Section */}
+                <StudentManagement messId={user.messId?._id || user.messId} />
 
                 {/* Feedback Section */}
                 <div>

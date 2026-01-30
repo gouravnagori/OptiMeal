@@ -8,6 +8,8 @@ import {
     getUnverifiedStudents,
     verifyStudent,
     deleteStudent,
+    getAllStudents,
+    toggleStudentStatus,
     verifyEmail,
     forgotPassword,
     resetPassword
@@ -24,6 +26,10 @@ router.get('/get-unverified', getUnverifiedCount);
 router.get('/get-unverified-list', getUnverifiedStudents);
 router.post('/verify-student', verifyStudent);
 router.delete('/delete-student', deleteStudent);
+
+// Student Management Routes
+router.get('/get-all-students', getAllStudents);
+router.post('/toggle-student-status', toggleStudentStatus);
 
 // Security Routes
 router.get('/verify-email', verifyEmail);

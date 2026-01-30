@@ -297,6 +297,44 @@ export const deleteStudent = async (req, res) => {
     }
 };
 
+// Get all students (verified + unverified) for student management
+export const getAllStudents = async (req, res) => {
+    const { messId, filter } = req.query; // filter can be 'all', 'verified', 'unverified'
+    try {
+        let query = {
+            messId: new mongoose.Types.ObjectId(messId),
+            role: 'student'
+        };
+
+        // Apply filter if specified
+        if (filter === 'verified') {
+            query.isVerified = true;
+        } else if (filter === 'unverified') {
+            query.isVerified = false;
+        }
+
+        const students = await User.find(query)
+            .select('name email phone avatar isVerified createdAt')
+            .sort({ createdAt: -1 }); // Newest first
+
+        res.status(200).json(students);
+    } catch (error) {
+        console.error('Fetch All Students Error:', error);
+        res.status(500).json({ message: 'Error fetching students', error: error.message });
+    }
+};
+
+// Toggle student verification status
+export const toggleStudentStatus = async (req, res) => {
+    const { studentId, isVerified } = req.body;
+    try {
+        await User.findByIdAndUpdate(studentId, { isVerified });
+        res.status(200).json({ message: isVerified ? 'Student Verified' : 'Student Unverified' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating student status' });
+    }
+};
+
 export const verifyEmail = async (req, res) => {
     const { token } = req.query;
     try {
