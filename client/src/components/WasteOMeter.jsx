@@ -36,41 +36,31 @@ const WasteOMeter = () => {
                 </div>
             </div>
 
-            <div className="absolute inset-0 bg-gray-900/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center p-6 border border-gray-700/50 rounded-3xl">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-xl shadow-purple-500/20">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-2">Coming Soon</h3>
-                <p className="text-gray-400 max-w-sm">
-                    We are building advanced AI analytics to help you track and reduce waste effectively.
-                </p>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 opacity-20 pointer-events-none">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <StatCard
                     label="Food Saved"
-                    value="0"
+                    value="12"
                     unit="kg"
                     color="bg-green-500/20 text-green-500"
                     icon={<MdOutlineFoodBank />}
                 />
                 <StatCard
                     label="Money Saved"
-                    value="₹0"
+                    value="₹2400"
                     unit=""
                     color="bg-blue-500/20 text-blue-500"
                     icon={<MdAttachMoney />}
                 />
                 <StatCard
                     label="People Fed (NGO)"
-                    value="0"
+                    value="50"
                     unit=""
                     color="bg-purple-500/20 text-purple-500"
                     icon={<MdPeople />}
                 />
                 <StatCard
                     label="CO2 Avoided"
-                    value="0"
+                    value="4.5"
                     unit="kg"
                     color="bg-orange-500/20 text-orange-500"
                     icon={<MdCo2 />}
