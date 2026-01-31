@@ -62,11 +62,11 @@ const StudentManagement = ({ messId }) => {
     );
 
     return (
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <span className="text-2xl">👥</span> Student Management
-                    <span className="text-sm font-normal text-gray-400">({students.length} total)</span>
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 sm:p-6">
+            <div className="flex flex-col gap-4 mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2 flex-wrap">
+                    <span className="text-xl sm:text-2xl">👥</span> Student Management
+                    <span className="text-xs sm:text-sm font-normal text-gray-400">({students.length} total)</span>
                 </h2>
 
                 <div className="flex flex-wrap gap-2">
@@ -74,9 +74,9 @@ const StudentManagement = ({ messId }) => {
                         <button
                             key={f}
                             onClick={() => setFilter(f)}
-                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${filter === f
-                                    ? 'bg-primary text-dark'
-                                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                            className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${filter === f
+                                ? 'bg-primary text-dark'
+                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                                 }`}
                         >
                             {f === 'all' ? 'All' : f === 'verified' ? '✓ Verified' : '⏳ Pending'}
@@ -107,30 +107,30 @@ const StudentManagement = ({ messId }) => {
                     <p>No students found</p>
                 </div>
             ) : (
-                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1 sm:pr-2">
                     {filteredStudents.map((student) => (
                         <div
                             key={student._id}
-                            className="flex items-center justify-between p-4 bg-gray-800/50 rounded-xl border border-gray-700 hover:border-gray-600 transition-colors"
+                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 bg-gray-800/50 rounded-xl border border-gray-700 hover:border-gray-600 transition-colors"
                         >
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
                                 <img
                                     src={student.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${student.name}`}
                                     alt={student.name}
-                                    className="w-10 h-10 rounded-full bg-gray-700"
+                                    className="w-10 h-10 rounded-full bg-gray-700 flex-shrink-0"
                                 />
-                                <div>
-                                    <h4 className="font-medium text-white">{student.name}</h4>
-                                    <p className="text-sm text-gray-400">{student.email}</p>
+                                <div className="min-w-0 flex-1">
+                                    <h4 className="font-medium text-white truncate">{student.name}</h4>
+                                    <p className="text-sm text-gray-400 truncate">{student.email}</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 justify-end flex-shrink-0 ml-auto sm:ml-0">
                                 {/* Status Badge */}
                                 <span
-                                    className={`px-2 py-1 rounded-full text-xs font-medium ${student.isVerified
-                                            ? 'bg-green-500/20 text-green-400'
-                                            : 'bg-yellow-500/20 text-yellow-400'
+                                    className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${student.isVerified
+                                        ? 'bg-green-500/20 text-green-400'
+                                        : 'bg-yellow-500/20 text-yellow-400'
                                         }`}
                                 >
                                     {student.isVerified ? '✓ Verified' : '⏳ Pending'}
@@ -139,9 +139,9 @@ const StudentManagement = ({ messId }) => {
                                 {/* Toggle Button */}
                                 <button
                                     onClick={() => handleToggleStatus(student._id, student.isVerified)}
-                                    className={`p-2 rounded-lg transition-colors ${student.isVerified
-                                            ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30'
-                                            : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
+                                    className={`p-2 rounded-lg transition-colors flex-shrink-0 ${student.isVerified
+                                        ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30'
+                                        : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
                                         }`}
                                     title={student.isVerified ? 'Unverify' : 'Verify'}
                                 >
@@ -151,7 +151,7 @@ const StudentManagement = ({ messId }) => {
                                 {/* Delete Button */}
                                 <button
                                     onClick={() => handleDeleteStudent(student._id, student.name)}
-                                    className="p-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
+                                    className="p-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors flex-shrink-0"
                                     title="Remove Student"
                                 >
                                     ✕
