@@ -5,8 +5,16 @@ import { API_URL } from '../config';
 
 const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
+// Get current day name (lowercase to match days array)
+const getCurrentDay = () => {
+    const dayIndex = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+    // Convert to our array index (our array starts with monday, not sunday)
+    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    return dayNames[dayIndex];
+};
+
 const MenuEditor = ({ user }) => {
-    const [selectedDay, setSelectedDay] = useState('monday');
+    const [selectedDay, setSelectedDay] = useState(getCurrentDay());
     const [fullWeekMenu, setFullWeekMenu] = useState({});
     const [loading, setLoading] = useState(false);
 
@@ -100,8 +108,8 @@ const MenuEditor = ({ user }) => {
                         key={day}
                         onClick={() => setSelectedDay(day)}
                         className={`px-4 py-2 rounded-lg text-sm font-bold capitalize whitespace-nowrap transition-colors ${selectedDay === day
-                                ? 'bg-primary text-dark'
-                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                            ? 'bg-primary text-dark'
+                            : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                             }`}
                     >
                         {day}
