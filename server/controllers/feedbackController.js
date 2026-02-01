@@ -1,8 +1,16 @@
 import Feedback from '../models/Feedback.js';
+import { containsProfanity } from '../utils/profanityFilter.js';
 
 // Add new feedback (Student)
 export const addFeedback = async (req, res) => {
     const { studentId, messId, message, rating } = req.body;
+
+    // Server-side profanity check (backup validation)
+    if (containsProfanity(message)) {
+        return res.status(400).json({
+            message: "Your feedback contains inappropriate language. Please keep it constructive."
+        });
+    }
 
     try {
         const feedback = new Feedback({

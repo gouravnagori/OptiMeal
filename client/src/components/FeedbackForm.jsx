@@ -2,6 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { API_URL } from '../config';
+import { containsProfanity } from '../utils/profanityFilter';
 
 const FeedbackForm = ({ studentId, messId }) => {
     const [message, setMessage] = useState('');
@@ -11,6 +12,12 @@ const FeedbackForm = ({ studentId, messId }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!message.trim()) return;
+
+        // Check for profanity before submission
+        if (containsProfanity(message)) {
+            toast.error("Your feedback contains inappropriate language. Please keep it constructive.");
+            return;
+        }
 
         setLoading(true);
         try {
@@ -25,7 +32,11 @@ const FeedbackForm = ({ studentId, messId }) => {
             setRating(5);
         } catch (error) {
             console.error(error);
-            toast.error("Failed to send feedback");
+            if (error.response?.data?.message) {
+                toast.error(error.response.data.message);
+            } else {
+                toast.error("Failed to send feedback");
+            }
         } finally {
             setLoading(false);
         }
@@ -37,6 +48,17 @@ const FeedbackForm = ({ studentId, messId }) => {
                 <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
                 Send Feedback to Manager
             </h3>
+
+            {/* Warning Message */}
+            <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-2">
+                <svg className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <p className="text-sm text-amber-200">
+                    Your feedback is anonymous to mess staff. However, inappropriate language may be reviewed by administration. Please keep your feedback constructive.
+                </p>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                     <label className="block text-sm text-gray-400 mb-2">Rate your recent meals</label>
