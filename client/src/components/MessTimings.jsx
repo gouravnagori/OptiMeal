@@ -1,7 +1,102 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { API_URL } from '../config';
+
+// Helper functions outside component to prevent re-creation
+const parse24to12 = (time24) => {
+    if (!time24) return { hour: '12', minute: '00', period: 'AM' };
+    const [hours, minutes] = time24.split(':');
+    const h = parseInt(hours);
+    const period = h >= 12 ? 'PM' : 'AM';
+    const h12 = h % 12 || 12;
+    return { hour: String(h12), minute: minutes || '00', period };
+};
+
+const format12to24 = (hour, minute, period) => {
+    let h = parseInt(hour);
+    if (period === 'PM' && h !== 12) h += 12;
+    if (period === 'AM' && h === 12) h = 0;
+    return `${String(h).padStart(2, '0')}:${minute}`;
+};
+
+const formatTime12 = (time24) => {
+    if (!time24) return '';
+    const { hour, minute, period } = parse24to12(time24);
+    return `${hour}:${minute} ${period}`;
+};
+
+// Time Picker Component - defined OUTSIDE to prevent re-creation
+const TimePicker = memo(({ value, onChange }) => {
+    const { hour, minute, period } = parse24to12(value);
+
+    const handleHourChange = (e) => {
+        onChange(format12to24(e.target.value, minute, period));
+    };
+
+    const handleMinuteChange = (e) => {
+        onChange(format12to24(hour, e.target.value, period));
+    };
+
+    const handlePeriodChange = (e) => {
+        onChange(format12to24(hour, minute, e.target.value));
+    };
+
+    return (
+        <div className="flex items-center gap-1">
+            <select
+                value={hour}
+                onChange={handleHourChange}
+                className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-1.5 text-white text-sm w-14 cursor-pointer"
+            >
+                {[12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(h => (
+                    <option key={h} value={String(h)}>{h}</option>
+                ))}
+            </select>
+            <span className="text-gray-400">:</span>
+            <select
+                value={minute}
+                onChange={handleMinuteChange}
+                className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-1.5 text-white text-sm w-14 cursor-pointer"
+            >
+                {['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'].map(m => (
+                    <option key={m} value={m}>{m}</option>
+                ))}
+            </select>
+            <select
+                value={period}
+                onChange={handlePeriodChange}
+                className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-1.5 text-white text-sm w-14 cursor-pointer font-bold"
+            >
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+            </select>
+        </div>
+    );
+});
+
+// Live Clock Component - separate to isolate re-renders
+const LiveClock = memo(() => {
+    const [time, setTime] = useState(new Date());
+
+    useEffect(() => {
+        const interval = setInterval(() => setTime(new Date()), 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const h = time.getHours();
+    const m = time.getMinutes();
+    const s = time.getSeconds();
+    const period = h >= 12 ? 'PM' : 'AM';
+    const h12 = h % 12 || 12;
+    const formatted = `${h12}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')} ${period}`;
+
+    return (
+        <span className="text-sm font-mono text-primary font-bold bg-primary/10 px-2 py-0.5 rounded">
+            {formatted}
+        </span>
+    );
+});
 
 const MessTimings = ({ messId }) => {
     const [timings, setTimings] = useState({
@@ -13,15 +108,6 @@ const MessTimings = ({ messId }) => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [currentTime, setCurrentTime] = useState(new Date());
-
-    // Update clock every second
-    useEffect(() => {
-        const clockInterval = setInterval(() => {
-            setCurrentTime(new Date());
-        }, 1000);
-        return () => clearInterval(clockInterval);
-    }, []);
 
     useEffect(() => {
         fetchTimings();
@@ -38,39 +124,6 @@ const MessTimings = ({ messId }) => {
         } finally {
             setLoading(false);
         }
-    };
-
-    // Convert 24h to 12h format object
-    const parse24to12 = (time24) => {
-        if (!time24) return { hour: '12', minute: '00', period: 'AM' };
-        const [hours, minutes] = time24.split(':');
-        const h = parseInt(hours);
-        const period = h >= 12 ? 'PM' : 'AM';
-        const h12 = h % 12 || 12;
-        return { hour: String(h12), minute: minutes || '00', period };
-    };
-
-    // Convert 12h to 24h format string
-    const format12to24 = (hour, minute, period) => {
-        let h = parseInt(hour);
-        if (period === 'PM' && h !== 12) h += 12;
-        if (period === 'AM' && h === 12) h = 0;
-        return `${String(h).padStart(2, '0')}:${minute}`;
-    };
-
-    const formatTime12 = (time24) => {
-        if (!time24) return '';
-        const { hour, minute, period } = parse24to12(time24);
-        return `${hour}:${minute} ${period}`;
-    };
-
-    const formatCurrentTime = () => {
-        const h = currentTime.getHours();
-        const m = currentTime.getMinutes();
-        const s = currentTime.getSeconds();
-        const period = h >= 12 ? 'PM' : 'AM';
-        const h12 = h % 12 || 12;
-        return `${h12}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')} ${period}`;
     };
 
     const handleTimeChange = (meal, field, value) => {
@@ -99,53 +152,11 @@ const MessTimings = ({ messId }) => {
         }
     };
 
-    // Time Picker Component with AM/PM
-    const TimePicker = ({ value, onChange, label }) => {
-        const { hour, minute, period } = parse24to12(value);
-
-        const updateTime = (newHour, newMinute, newPeriod) => {
-            onChange(format12to24(newHour, newMinute, newPeriod));
-        };
-
-        return (
-            <div className="flex items-center gap-1">
-                {label && <span className="text-xs text-gray-400 w-20">{label}</span>}
-                <select
-                    value={hour}
-                    onChange={(e) => updateTime(e.target.value, minute, period)}
-                    className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-1.5 text-white text-sm w-16 cursor-pointer"
-                >
-                    {[12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(h => (
-                        <option key={h} value={String(h)}>{h}</option>
-                    ))}
-                </select>
-                <span className="text-gray-400">:</span>
-                <select
-                    value={minute}
-                    onChange={(e) => updateTime(hour, e.target.value, period)}
-                    className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-1.5 text-white text-sm w-16 cursor-pointer"
-                >
-                    {['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'].map(m => (
-                        <option key={m} value={m}>{m}</option>
-                    ))}
-                </select>
-                <select
-                    value={period}
-                    onChange={(e) => updateTime(hour, minute, e.target.value)}
-                    className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-1.5 text-white text-sm w-16 appearance-none cursor-pointer font-bold"
-                >
-                    <option value="AM">AM</option>
-                    <option value="PM">PM</option>
-                </select>
-            </div>
-        );
-    };
-
     const meals = [
-        { key: 'breakfast', label: 'Breakfast', icon: '🌅', color: 'orange' },
-        { key: 'lunch', label: 'Lunch', icon: '☀️', color: 'yellow' },
-        { key: 'highTea', label: 'High Tea', icon: '🍵', color: 'pink' },
-        { key: 'dinner', label: 'Dinner', icon: '🌙', color: 'blue' }
+        { key: 'breakfast', label: 'Breakfast', icon: '🌅' },
+        { key: 'lunch', label: 'Lunch', icon: '☀️' },
+        { key: 'highTea', label: 'High Tea', icon: '🍵' },
+        { key: 'dinner', label: 'Dinner', icon: '🌙' }
     ];
 
     if (loading) {
@@ -165,12 +176,9 @@ const MessTimings = ({ messId }) => {
                     <h2 className="text-xl font-bold text-white flex items-center gap-2">
                         <span className="text-2xl">⏰</span> Mess Timings
                     </h2>
-                    {/* Live 12-hour Clock */}
                     <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-gray-400">Current Time:</span>
-                        <span className="text-sm font-mono text-primary font-bold bg-primary/10 px-2 py-0.5 rounded">
-                            {formatCurrentTime()}
-                        </span>
+                        <LiveClock />
                     </div>
                 </div>
                 <button
@@ -186,11 +194,10 @@ const MessTimings = ({ messId }) => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {meals.map(({ key, label, icon, color }) => (
+                {meals.map(({ key, label, icon }) => (
                     <div
                         key={key}
-                        className={`p-4 rounded-xl border border-gray-700 bg-gray-800/50 ${isEditing ? 'ring-2 ring-primary/30' : ''
-                            }`}
+                        className={`p-4 rounded-xl border border-gray-700 bg-gray-800/50 ${isEditing ? 'ring-2 ring-primary/30' : ''}`}
                     >
                         <div className="flex items-center gap-2 mb-3">
                             <span className="text-2xl">{icon}</span>
@@ -205,7 +212,7 @@ const MessTimings = ({ messId }) => {
                                         value={timings[key]?.servingStart}
                                         onChange={(v) => handleTimeChange(key, 'servingStart', v)}
                                     />
-                                    <span className="text-gray-500 mx-1">to</span>
+                                    <span className="text-gray-500">to</span>
                                     <TimePicker
                                         value={timings[key]?.servingEnd}
                                         onChange={(v) => handleTimeChange(key, 'servingEnd', v)}
@@ -245,7 +252,7 @@ const MessTimings = ({ messId }) => {
                     <button
                         onClick={() => {
                             setIsEditing(false);
-                            fetchTimings(); // Reset changes
+                            fetchTimings();
                         }}
                         className="px-4 py-2 bg-gray-700 text-white rounded-xl hover:bg-gray-600"
                     >
