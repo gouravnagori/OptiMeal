@@ -48,10 +48,19 @@ const StudentMenuDisplay = ({ messId }) => {
         </div>
     );
 
+    // Get current day name
+    const getDayName = () => {
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        return days[new Date().getDay()];
+    };
+
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-gray-400">Today's Special</span>
+                <div className="flex flex-col">
+                    <span className="text-lg font-semibold text-white">{getDayName()}'s Menu</span>
+                    <span className="text-xs text-gray-400">{new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                </div>
                 <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded border border-green-500/30">Live Menu</span>
             </div>
 
