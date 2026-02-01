@@ -47,7 +47,7 @@ const MessTimings = ({ messId }) => {
         const h = parseInt(hours);
         const period = h >= 12 ? 'PM' : 'AM';
         const h12 = h % 12 || 12;
-        return { hour: String(h12).padStart(2, '0'), minute: minutes, period };
+        return { hour: String(h12), minute: minutes || '00', period };
     };
 
     // Convert 12h to 24h format string
@@ -113,19 +113,19 @@ const MessTimings = ({ messId }) => {
                 <select
                     value={hour}
                     onChange={(e) => updateTime(e.target.value, minute, period)}
-                    className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-1.5 text-white text-sm w-16 appearance-none cursor-pointer"
+                    className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-1.5 text-white text-sm w-16 cursor-pointer"
                 >
                     {[12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(h => (
-                        <option key={h} value={String(h).padStart(2, '0')}>{h}</option>
+                        <option key={h} value={String(h)}>{h}</option>
                     ))}
                 </select>
                 <span className="text-gray-400">:</span>
                 <select
                     value={minute}
                     onChange={(e) => updateTime(hour, e.target.value, period)}
-                    className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-1.5 text-white text-sm w-16 appearance-none cursor-pointer"
+                    className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-1.5 text-white text-sm w-16 cursor-pointer"
                 >
-                    {['00', '15', '30', '45'].map(m => (
+                    {['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'].map(m => (
                         <option key={m} value={m}>{m}</option>
                     ))}
                 </select>
