@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { API_URL } from '../config';
@@ -8,6 +8,20 @@ const FeedbackForm = ({ studentId, messId }) => {
     const [message, setMessage] = useState('');
     const [rating, setRating] = useState(5);
     const [loading, setLoading] = useState(false);
+    const [profanityAttempts, setProfanityAttempts] = useState(0);
+    const [showProfanityAlert, setShowProfanityAlert] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
+
+    // Auto-hide profanity alert after 2 minutes
+    useEffect(() => {
+        let timer;
+        if (showProfanityAlert) {
+            timer = setTimeout(() => {
+                setShowProfanityAlert(false);
+            }, 120000); // 2 minutes = 120000ms
+        }
+        return () => clearTimeout(timer);
+    }, [showProfanityAlert]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -15,7 +29,22 @@ const FeedbackForm = ({ studentId, messId }) => {
 
         // Check for profanity before submission
         if (containsProfanity(message)) {
-            toast.error("Your feedback contains inappropriate language. Please keep it constructive.");
+            const attempts = profanityAttempts + 1;
+            setProfanityAttempts(attempts);
+
+            // Escalating warning messages based on attempts
+            let warningMsg = '';
+            if (attempts === 1) {
+                warningMsg = 'Your feedback contains inappropriate language. Please keep it constructive.';
+            } else if (attempts === 2) {
+                warningMsg = '⚠️ Second warning! Continued use of inappropriate language may result in action against your account.';
+            } else if (attempts >= 3) {
+                warningMsg = '🚫 FINAL WARNING! One more attempt with abusive language and your feedback privileges will be suspended. This incident will be reported to administration.';
+            }
+
+            setAlertMessage(warningMsg);
+            setShowProfanityAlert(true);
+            toast.error(warningMsg);
             return;
         }
 
@@ -30,6 +59,7 @@ const FeedbackForm = ({ studentId, messId }) => {
             toast.success("Feedback sent to manager!");
             setMessage('');
             setRating(5);
+            setProfanityAttempts(0); // Reset on successful submission
         } catch (error) {
             console.error(error);
             if (error.response?.data?.message) {
@@ -49,15 +79,43 @@ const FeedbackForm = ({ studentId, messId }) => {
                 Send Feedback to Manager
             </h3>
 
-            {/* Warning Message */}
-            <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-2">
-                <svg className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {/* Static Warning Message - RED */}
+            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-start gap-2">
+                <svg className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
-                <p className="text-sm text-amber-200">
+                <p className="text-sm text-red-200">
                     Your feedback is anonymous to mess staff. However, inappropriate language may be reviewed by administration. Please keep your feedback constructive.
                 </p>
             </div>
+
+            {/* Dynamic Profanity Alert - AMBER (shows when profanity detected) */}
+            {showProfanityAlert && (
+                <div className={`mb-4 p-3 rounded-lg flex items-start gap-2 animate-pulse ${profanityAttempts >= 3
+                        ? 'bg-red-600/20 border border-red-500'
+                        : 'bg-amber-500/20 border border-amber-500'
+                    }`}>
+                    <svg className={`w-5 h-5 flex-shrink-0 mt-0.5 ${profanityAttempts >= 3 ? 'text-red-400' : 'text-amber-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                        <p className={`text-sm font-medium ${profanityAttempts >= 3 ? 'text-red-200' : 'text-amber-200'}`}>
+                            {alertMessage}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                            Attempt {profanityAttempts} of 3 • This alert will disappear in 2 minutes
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => setShowProfanityAlert(false)}
+                        className="ml-auto text-gray-400 hover:text-white"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
@@ -85,11 +143,24 @@ const FeedbackForm = ({ studentId, messId }) => {
                     />
                 </div>
                 <button
-                    disabled={loading || !message.trim()}
-                    className="w-full py-3 bg-purple-600 hover:bg-purple-500 rounded-xl font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={loading || !message.trim() || profanityAttempts >= 4}
+                    className={`w-full py-3 rounded-xl font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${profanityAttempts >= 4
+                            ? 'bg-red-600 cursor-not-allowed'
+                            : 'bg-purple-600 hover:bg-purple-500'
+                        }`}
                 >
-                    {loading ? 'Sending...' : 'Submit Feedback'}
+                    {profanityAttempts >= 4
+                        ? '🚫 Feedback Suspended'
+                        : loading
+                            ? 'Sending...'
+                            : 'Submit Feedback'
+                    }
                 </button>
+                {profanityAttempts >= 4 && (
+                    <p className="text-center text-red-400 text-sm">
+                        Your feedback privileges have been temporarily suspended due to repeated policy violations. Contact administration for assistance.
+                    </p>
+                )}
             </form>
         </div>
     );
