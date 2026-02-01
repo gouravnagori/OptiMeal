@@ -13,6 +13,15 @@ const MessTimings = ({ messId }) => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    // Update clock every second
+    useEffect(() => {
+        const clockInterval = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+        return () => clearInterval(clockInterval);
+    }, []);
 
     useEffect(() => {
         fetchTimings();
@@ -29,6 +38,39 @@ const MessTimings = ({ messId }) => {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Convert 24h to 12h format object
+    const parse24to12 = (time24) => {
+        if (!time24) return { hour: '12', minute: '00', period: 'AM' };
+        const [hours, minutes] = time24.split(':');
+        const h = parseInt(hours);
+        const period = h >= 12 ? 'PM' : 'AM';
+        const h12 = h % 12 || 12;
+        return { hour: String(h12).padStart(2, '0'), minute: minutes, period };
+    };
+
+    // Convert 12h to 24h format string
+    const format12to24 = (hour, minute, period) => {
+        let h = parseInt(hour);
+        if (period === 'PM' && h !== 12) h += 12;
+        if (period === 'AM' && h === 12) h = 0;
+        return `${String(h).padStart(2, '0')}:${minute}`;
+    };
+
+    const formatTime12 = (time24) => {
+        if (!time24) return '';
+        const { hour, minute, period } = parse24to12(time24);
+        return `${hour}:${minute} ${period}`;
+    };
+
+    const formatCurrentTime = () => {
+        const h = currentTime.getHours();
+        const m = currentTime.getMinutes();
+        const s = currentTime.getSeconds();
+        const period = h >= 12 ? 'PM' : 'AM';
+        const h12 = h % 12 || 12;
+        return `${h12}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')} ${period}`;
     };
 
     const handleTimeChange = (meal, field, value) => {
@@ -57,13 +99,46 @@ const MessTimings = ({ messId }) => {
         }
     };
 
-    const formatTime = (time24) => {
-        if (!time24) return '';
-        const [hours, minutes] = time24.split(':');
-        const h = parseInt(hours);
-        const ampm = h >= 12 ? 'PM' : 'AM';
-        const h12 = h % 12 || 12;
-        return `${h12}:${minutes} ${ampm}`;
+    // Time Picker Component with AM/PM
+    const TimePicker = ({ value, onChange, label }) => {
+        const { hour, minute, period } = parse24to12(value);
+
+        const updateTime = (newHour, newMinute, newPeriod) => {
+            onChange(format12to24(newHour, newMinute, newPeriod));
+        };
+
+        return (
+            <div className="flex items-center gap-1">
+                {label && <span className="text-xs text-gray-400 w-20">{label}</span>}
+                <select
+                    value={hour}
+                    onChange={(e) => updateTime(e.target.value, minute, period)}
+                    className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-1.5 text-white text-sm w-16 appearance-none cursor-pointer"
+                >
+                    {[12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(h => (
+                        <option key={h} value={String(h).padStart(2, '0')}>{h}</option>
+                    ))}
+                </select>
+                <span className="text-gray-400">:</span>
+                <select
+                    value={minute}
+                    onChange={(e) => updateTime(hour, e.target.value, period)}
+                    className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-1.5 text-white text-sm w-16 appearance-none cursor-pointer"
+                >
+                    {['00', '15', '30', '45'].map(m => (
+                        <option key={m} value={m}>{m}</option>
+                    ))}
+                </select>
+                <select
+                    value={period}
+                    onChange={(e) => updateTime(hour, minute, e.target.value)}
+                    className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-1.5 text-white text-sm w-16 appearance-none cursor-pointer font-bold"
+                >
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                </select>
+            </div>
+        );
     };
 
     const meals = [
@@ -86,15 +161,24 @@ const MessTimings = ({ messId }) => {
     return (
         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <span className="text-2xl">⏰</span> Mess Timings
-                </h2>
+                <div>
+                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                        <span className="text-2xl">⏰</span> Mess Timings
+                    </h2>
+                    {/* Live 12-hour Clock */}
+                    <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-gray-400">Current Time:</span>
+                        <span className="text-sm font-mono text-primary font-bold bg-primary/10 px-2 py-0.5 rounded">
+                            {formatCurrentTime()}
+                        </span>
+                    </div>
+                </div>
                 <button
                     onClick={() => isEditing ? handleSave() : setIsEditing(true)}
                     disabled={saving}
                     className={`px-4 py-2 rounded-xl font-medium transition-all ${isEditing
-                            ? 'bg-primary text-dark hover:bg-primary-dark'
-                            : 'bg-gray-800 text-white hover:bg-gray-700'
+                        ? 'bg-primary text-dark hover:bg-primary-dark'
+                        : 'bg-gray-800 text-white hover:bg-gray-700'
                         }`}
                 >
                     {saving ? 'Saving...' : isEditing ? '💾 Save Changes' : '✏️ Edit Timings'}
@@ -115,31 +199,25 @@ const MessTimings = ({ messId }) => {
 
                         {isEditing ? (
                             <div className="space-y-3">
-                                <div className="flex items-center gap-2">
-                                    <label className="text-xs text-gray-400 w-24">Serving:</label>
-                                    <input
-                                        type="time"
-                                        value={timings[key]?.servingStart || ''}
-                                        onChange={(e) => handleTimeChange(key, 'servingStart', e.target.value)}
-                                        className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-1 text-white text-sm"
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span className="text-xs text-gray-400 w-16">Serving:</span>
+                                    <TimePicker
+                                        value={timings[key]?.servingStart}
+                                        onChange={(v) => handleTimeChange(key, 'servingStart', v)}
                                     />
-                                    <span className="text-gray-500">to</span>
-                                    <input
-                                        type="time"
-                                        value={timings[key]?.servingEnd || ''}
-                                        onChange={(e) => handleTimeChange(key, 'servingEnd', e.target.value)}
-                                        className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-1 text-white text-sm"
+                                    <span className="text-gray-500 mx-1">to</span>
+                                    <TimePicker
+                                        value={timings[key]?.servingEnd}
+                                        onChange={(v) => handleTimeChange(key, 'servingEnd', v)}
                                     />
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <label className="text-xs text-gray-400 w-24">Request by:</label>
-                                    <input
-                                        type="time"
-                                        value={timings[key]?.requestDeadline || ''}
-                                        onChange={(e) => handleTimeChange(key, 'requestDeadline', e.target.value)}
-                                        className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-1 text-white text-sm"
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span className="text-xs text-gray-400 w-16">Lock at:</span>
+                                    <TimePicker
+                                        value={timings[key]?.requestDeadline}
+                                        onChange={(v) => handleTimeChange(key, 'requestDeadline', v)}
                                     />
-                                    <span className="text-xs text-red-400">🔒 Auto-lock after</span>
+                                    <span className="text-xs text-red-400 ml-2">🔒 Auto-lock</span>
                                 </div>
                             </div>
                         ) : (
@@ -147,13 +225,13 @@ const MessTimings = ({ messId }) => {
                                 <div className="flex items-center gap-2 text-sm">
                                     <span className="text-gray-400">🍽️ Serving:</span>
                                     <span className="text-white font-medium">
-                                        {formatTime(timings[key]?.servingStart)} - {formatTime(timings[key]?.servingEnd)}
+                                        {formatTime12(timings[key]?.servingStart)} - {formatTime12(timings[key]?.servingEnd)}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2 text-sm">
-                                    <span className="text-gray-400">🔒 Request by:</span>
+                                    <span className="text-gray-400">🔒 Lock at:</span>
                                     <span className="text-yellow-400 font-medium">
-                                        {formatTime(timings[key]?.requestDeadline)}
+                                        {formatTime12(timings[key]?.requestDeadline)}
                                     </span>
                                 </div>
                             </div>
@@ -177,7 +255,7 @@ const MessTimings = ({ messId }) => {
             )}
 
             <p className="text-xs text-gray-500 mt-4">
-                💡 Students won't be able to request meals after the "Request by" deadline
+                💡 Students won't be able to request meals after the lock time
             </p>
         </div>
     );

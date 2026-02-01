@@ -103,18 +103,26 @@ const MenuEditor = ({ user }) => {
 
             {/* Day Selector Tabs */}
             <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
-                {days.map(day => (
-                    <button
-                        key={day}
-                        onClick={() => setSelectedDay(day)}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold capitalize whitespace-nowrap transition-colors ${selectedDay === day
-                            ? 'bg-primary text-dark'
-                            : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                            }`}
-                    >
-                        {day}
-                    </button>
-                ))}
+                {days.map(day => {
+                    const isToday = day === getCurrentDay();
+                    return (
+                        <button
+                            key={day}
+                            onClick={() => setSelectedDay(day)}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold capitalize whitespace-nowrap transition-colors relative ${selectedDay === day
+                                ? 'bg-primary text-dark'
+                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                                }`}
+                        >
+                            {day}
+                            {isToday && (
+                                <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[8px] px-1 py-0.5 rounded-full font-bold">
+                                    TODAY
+                                </span>
+                            )}
+                        </button>
+                    );
+                })}
             </div>
 
             <div className="space-y-4 animate-fadeIn">
