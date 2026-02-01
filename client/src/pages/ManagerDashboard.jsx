@@ -78,6 +78,16 @@ const ManagerDashboard = () => {
                 fetchStats(parsedUser);
                 fetchUnverifiedCount(parsedUser);
                 fetchUnverifiedList(parsedUser);
+
+                // Auto-refresh every 30 seconds
+                const refreshInterval = setInterval(() => {
+                    fetchStats(parsedUser);
+                    fetchUnverifiedCount(parsedUser);
+                    fetchUnverifiedList(parsedUser);
+                }, 30000); // 30 seconds
+
+                // Cleanup interval on unmount
+                return () => clearInterval(refreshInterval);
             } catch (e) {
                 console.error("Failed to parse user:", e);
                 window.location.href = '/auth/manager';

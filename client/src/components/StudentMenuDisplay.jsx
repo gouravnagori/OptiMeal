@@ -21,6 +21,13 @@ const StudentMenuDisplay = ({ messId }) => {
         };
 
         fetchMenu();
+
+        // Auto-refresh menu every 30 seconds
+        const refreshInterval = setInterval(() => {
+            fetchMenu();
+        }, 30000);
+
+        return () => clearInterval(refreshInterval);
     }, [messId]);
 
     if (loading) return <div className="text-gray-500 animate-pulse text-center p-4">Loading today's menu...</div>;

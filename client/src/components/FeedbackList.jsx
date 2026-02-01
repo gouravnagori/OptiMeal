@@ -21,6 +21,13 @@ const FeedbackList = ({ messId }) => {
         };
 
         fetchFeedback();
+
+        // Auto-refresh feedback every 30 seconds
+        const refreshInterval = setInterval(() => {
+            fetchFeedback();
+        }, 30000);
+
+        return () => clearInterval(refreshInterval);
     }, [messId]);
 
     // Format timestamp with date and time

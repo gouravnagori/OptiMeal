@@ -118,12 +118,23 @@ const MealSelector = () => {
             fetchMealTimings(user);
         }
 
+        // Auto-refresh menu and attendance every 30 seconds
+        const refreshInterval = setInterval(() => {
+            if (user) {
+                fetchDailyMenu(user);
+                fetchMealTimings(user);
+            }
+        }, 30000);
+
         // Check locked meals every minute
-        const interval = setInterval(() => {
+        const lockedInterval = setInterval(() => {
             checkLockedMeals(mealTimings);
         }, 60000);
 
-        return () => clearInterval(interval);
+        return () => {
+            clearInterval(refreshInterval);
+            clearInterval(lockedInterval);
+        };
     }, []);
 
     const fetchMealTimings = async (user) => {
