@@ -84,7 +84,7 @@ const ManagerDashboard = () => {
                     fetchStats(parsedUser);
                     fetchUnverifiedCount(parsedUser);
                     fetchUnverifiedList(parsedUser);
-                }, 30000); // 30 seconds
+                }, 10000); // 30 seconds
 
                 // Cleanup interval on unmount
                 return () => clearInterval(refreshInterval);

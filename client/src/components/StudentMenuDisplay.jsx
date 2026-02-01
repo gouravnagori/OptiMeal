@@ -25,7 +25,7 @@ const StudentMenuDisplay = ({ messId }) => {
         // Auto-refresh menu every 30 seconds
         const refreshInterval = setInterval(() => {
             fetchMenu();
-        }, 30000);
+        }, 10000);
 
         return () => clearInterval(refreshInterval);
     }, [messId]);

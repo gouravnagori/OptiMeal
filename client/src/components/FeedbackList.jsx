@@ -25,7 +25,7 @@ const FeedbackList = ({ messId }) => {
         // Auto-refresh feedback every 30 seconds
         const refreshInterval = setInterval(() => {
             fetchFeedback();
-        }, 30000);
+        }, 10000);
 
         return () => clearInterval(refreshInterval);
     }, [messId]);

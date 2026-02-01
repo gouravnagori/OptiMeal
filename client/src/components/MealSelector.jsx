@@ -124,7 +124,7 @@ const MealSelector = () => {
                 fetchDailyMenu(user);
                 fetchMealTimings(user);
             }
-        }, 30000);
+        }, 10000);
 
         // Check locked meals every minute
         const lockedInterval = setInterval(() => {
